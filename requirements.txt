@@ -1,0 +1,7 @@
+allure-robotframework
+robotframework==5.0.0
+robotframework-faker
+robotframework-seleniumlibrary
+pyyaml>=5.4
+robotframework-xvfb
+webdriver-manager
