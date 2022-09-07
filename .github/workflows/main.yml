@@ -1,0 +1,104 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+name: Robot Testing
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '30 10 * * 5'
+
+jobs:
+  build:
+    runs-on: paygo-runner-linux
+    strategy:
+      fail-fast: false
+      matrix:
+        headless: [true]
+        browser: [Chrome, Firefox, Edge]
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '12'
+    - name: Install operating system dependencies
+      run: |
+       npm install -g allure-commandline --save-dev
+    - name: Install chrome Browser
+      if: ${{  matrix.browser == 'chrome' }}
+      continue-on-error: true
+      run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get -y update
+          sudo apt-get install --assume-yes google-chrome-stable
+          google-chrome-stable --version
+      shell: bash
+    - name: Install firefox Browser
+      if: ${{  matrix.browser == 'firefox' }}
+      continue-on-error: true
+      run: |
+          sudo apt-get -y update && sudo apt-get install --assume-yes firefox
+          firefox --version
+          export DISPLAY=:99.0
+          Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
+      shell: bash
+    - name: Install Edge Browser
+      if: ${{  matrix.browser == 'Edge' }}
+      continue-on-error: true
+      run: |
+          curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+          sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
+          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge-dev.list'
+          sudo rm microsoft.gpg
+          sudo apt -y update && sudo apt install --assume-yes microsoft-edge-stable
+          microsoft-edge-stable --version
+      shell: bash
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies drivers
+      run: |
+        pip install -r requirements.txt
+        pip install --upgrade --force-reinstall chromedriver-binary-auto
+        ls -la drivers
+        chmod -R +x "${GITHUB_WORKSPACE}/drivers/"
+        export PATH=/usr/bin:$PATH
+        export PATH=${GITHUB_WORKSPACE}/drivers/chromedriver:$PATH
+        sudo ln -s "${GITHUB_WORKSPACE}/drivers/chromedriver" /usr/bin
+        sudo ln -s "${GITHUB_WORKSPACE}/drivers/geckodriver" /usr/bin
+        sudo ln -s "${GITHUB_WORKSPACE}/drivers/msedgedriver" /usr/bin
+        echo "$PATH"
+        pip list
+    - name: Run tests
+      if: always()
+      continue-on-error: true
+      run: |
+        python -m robot --variable BROWSER:${{ matrix.browser}} --listener allure_robotframework -d my_reports -i Regression ./
+      env:
+        ALLURE_MAX_STEP_MESSAGE_COUNT: 5
+    - name: Rerun tests failed
+      if: always()
+      continue-on-error: true
+      run: |
+        python -m robot --variable BROWSER:${{ matrix.browser}} --listener allure_robotframework --rerunfailed my_reports/output.xml --output my_reports/rerun.xml -i Regression ./
+      env:
+        ALLURE_MAX_STEP_MESSAGE_COUNT: 5
+    - name: 📊 Collect Allure files and generate allure-report folder
+      run: |
+        allure generate ./output/allure -o allure-results/
+    - name: 🎁 Publishing Allure artifact to GitHub Actions
+      uses: actions/upload-artifact@v2
+      with:
+        name: my_reports
+        path: my_reports
+
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages  # default: gh-pages
+        publish_dir: allure-results
+        destination_dir: ${{ matrix.browser}}
