@@ -3,6 +3,7 @@
 Resource     ../../../support/baseTest.robot
 Variables    ../elements/login_page.yaml
 
+Library    Telnet
 
 *** Keywords ***
 Perform the site authentication
@@ -12,9 +13,9 @@ Perform the site authentication
     Click Element       ${LOGIN_BUTTON}
 
 Perform the site authentication fail by user
-    Fill Text    ${USER_INPUT}        ${INCORRECT_USER}
-    Fill Text    ${PASSWORD_INPUT}    ${PASSWORD}
-    Click        ${LOGIN_BUTTON}      force=${True}
+    Input Text        ${USER_INPUT}        ${INCORRECT_USER}
+    Input Text        ${PASSWORD_INPUT}    ${PASSWORD}
+    Click Element     ${LOGIN_BUTTON}
 
 Validate if the login was successful
     Wait Until Element Is Visible        xpath=//*[text()='Products']   timeout=30s
@@ -22,17 +23,17 @@ Validate if the login was successful
 
 Validate if the login was fail
     [Arguments]    ${ERROR_MESSAGE}=${ERROR_TEXT}
-    Wait For Elements State    text=${ERROR_MESSAGE}   state=visible    timeout=10s
+    Set Selenium Implicit Wait	         15s
+    Wait Until Element Is Visible    xpath=//*[text()='${ERROR_MESSAGE}']  timeout=10s
     Elements in Login Page Fail
 
 Elements in Login Page Fail
-    ${elements_img_error}=         Get Elements    css=${ERROR_IMG}
-    ${img_error_count}=            Get Length    ${elements_img_error}
+    ${elements_img_error}=         Get WebElements    css=${ERROR_IMG}
+    ${img_error_count}=            Get Length        ${elements_img_error}
     Should Be Equal                "2"    "${img_error_count}"
-    Wait For Elements State        ${LOGIN_BUTTON}     state=visible    timeout=15s
+    Wait Until Element Is Visible        ${LOGIN_BUTTON}     timeout=15s
 
 Access the page without authentication 
     [Arguments]    ${URL}
-    New Context
-    New Page    ${URL}
-    Wait Until Network Is Idle    timeout=20s
+    Open Browser     about:blank         ${BROWSER}
+    Go to                                ${URL}
