@@ -4,21 +4,18 @@ Variables           ../support/resource/setup.yml
 Library             BrowserConfig.py
 Library             LibraryHelper.py
 Library             FakerLibrary    locale=pt_BR
+Library             ../global_variables.robot
 
 *** Variables ***
-${BROWSER}      Chrome
+${BROWSER}               Chrome
+${URL}                   https://www.saucedemo.com/
+${PATH_FEATURES}         ${EXECDIR}/atests/features
+${LOG_LEVEL}             DEBUG
+${DIC_EMPTY}
+${HEADLESS_FLAG}         ${False}
+${WAIT_MAX}              45 second
 
 *** Keywords ***
-Que Esteja Na Pagina Esqueci Minha Senha
-    Go to                                ${URLESQUECISENHA}
-    Maximize Browser Window
-    Set Selenium Implicit Wait	         30
-
-Que Esteja Na Pagina Cadastre-se
-    Go to                                ${URLCADASTRO}
-    Maximize Browser Window
-    Set Selenium Implicit Wait	         30
-
 Steps to Close Browser  
     Set Screenshot Directory       output/allure
     Capture Page Screenshot        EMBED

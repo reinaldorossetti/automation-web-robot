@@ -53,8 +53,3 @@ Scenario - Negative test, access the Inventory Page without authentication
     Given You display the Login Page
     When Access the page without authentication        ${INVENTORY_URL}
     Then Validate if the login was fail                ${ACCCESS_ERROR_INVENTORY}
-
-Test json file
-    ${json_object}=     Load Json From File    ${CURDIR}/elements/test.json
-    ${json_object}=     Update Value To Json    ${json_object}    $..payload.reason_code    funciona peste
-    Log To Console    ${json_object}

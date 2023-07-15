@@ -7,9 +7,9 @@ Variables    ../elements/login_page.yaml
 *** Keywords ***
 Perform the site authentication
     [Arguments]    ${USER_NAME}=${USER}    ${PW}=${PASSWORD}
-    Fill Text    ${USER_INPUT}        ${USER_NAME}
-    Fill Text    ${PASSWORD_INPUT}    ${PW}
-    Click        ${LOGIN_BUTTON}      force=${True}
+    Input Text    ${USER_INPUT}        ${USER_NAME}
+    Input Password    ${PASSWORD_INPUT}    ${PW}
+    Click Element       ${LOGIN_BUTTON}
 
 Perform the site authentication fail by user
     Fill Text    ${USER_INPUT}        ${INCORRECT_USER}
@@ -17,9 +17,8 @@ Perform the site authentication fail by user
     Click        ${LOGIN_BUTTON}      force=${True}
 
 Validate if the login was successful
-    Wait For All Promises
-    Wait For Elements State    text=Products   state=visible    timeout=30s
-    Wait For Elements State    ${INVENTORY_LOCATOR}   state=visible    timeout=30s
+    Wait Until Element Is Visible        xpath=//*[text()='Products']   timeout=30s
+    Wait Until Element Is Visible        ${INVENTORY_LOCATOR}      timeout=30s
 
 Validate if the login was fail
     [Arguments]    ${ERROR_MESSAGE}=${ERROR_TEXT}
