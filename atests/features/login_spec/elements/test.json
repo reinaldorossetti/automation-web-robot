@@ -1,0 +1,13 @@
+{
+	"headers": {
+		"sn": "products.vat-informations",
+		"pa.entity_id": "014GQXY5R0000000002X49SHNB",
+		"si": "Stored",
+		"pa.seller": "1P"
+	},
+	"payload": {
+		"regime": "1",
+		"reason_code": "",
+		"region": "pt-madeira"
+	}
+}
