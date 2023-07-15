@@ -1,6 +1,6 @@
 allure-robotframework
 robotframework~=6.0.0
-robotframework-seleniumlibrary~=6.1.0
+robotframework-seleniumlibrary~=4.4
 robotframework-faker
 pyyaml>=5.4
 robotframework-xvfb
